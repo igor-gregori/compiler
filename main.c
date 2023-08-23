@@ -11,15 +11,21 @@
 #define SUB 1
 #define MULT 2
 #define DIV 3
+#define DIVINT 4
 
 #define PARESQ 0
 #define PARDIR 1
+#define CHAESQ 2
+#define CHADIR 3
+#define COLESQ 4
+#define COLDIR 5
 
 char *codigo;
 int tamanho; 
 int pos;
 
-const char *ops = "+-*/";
+const char *ops = "+-*/\\";
+const char *pts = "(){}[]";
 
 typedef struct {
     int tipo;
@@ -49,6 +55,38 @@ char *operador_str(int op) {
         case DIV:
             res = "DIV";
             break;
+        case DIVINT:
+            res = "DIVINT";
+            break;
+        default:
+            res = "NENHUM";
+    }
+    
+    return res;
+}
+
+char *pontuacao_str(int pt) {
+    char *res;
+    
+    switch (pt) {
+        case PARESQ:
+            res = "PARESQ";
+            break;
+        case PARDIR:
+            res = "PARDIR";
+            break;
+        case CHAESQ:
+            res = "CHAESQ";
+            break;
+        case CHADIR:
+            res = "CHADIR";
+            break;
+        case COLESQ:
+            res = "COLESQ";
+            break;
+        case COLDIR:
+            res = "COLDIR";
+            break;
         default:
             res = "NENHUM";
     }
@@ -67,14 +105,14 @@ void imprime_token(Token *tok)
             printf("Operador\t -- Valor: %s\n", operador_str(tok->valor));
             break;
         case TOK_PONT:
-            printf("Pontuação\t -- Valor: %s\n", (tok->valor == PARESQ ? "PARESQ" : "PARDIR"));
+            printf("Pontuação\t -- Valor: %s\n", pontuacao_str(tok->valor));
             break;
         default:
             printf("TIPO DE TOKEN DESCONHECIDO\n");
     }
 }
 
-int operator(char c)
+int operador(char c)
 {
     int res;
     
@@ -90,6 +128,39 @@ int operator(char c)
             break;
         case '/':
             res = DIV;
+            break;
+        case '\\':
+            res = DIVINT;
+            break;
+        default:
+            res = -1;
+    }
+    
+    return res;
+}
+
+int pontuacao(char c)
+{
+    int res;
+    
+    switch(c) {
+        case '(':
+            res = PARESQ;
+            break;
+        case ')':
+            res = PARDIR;
+            break;
+        case '{':
+            res = CHAESQ;
+            break;
+        case '}':
+            res = CHADIR;
+            break;
+        case '[':
+            res = COLESQ;
+            break;
+        case ']':
+            res = COLDIR;
             break;
         default:
             res = -1;
@@ -137,10 +208,10 @@ Token *proximo_token(Token *tok)
         tok->valor = atoi(valor);
     } else if (strchr(ops, c) != NULL) {
         tok->tipo = TOK_OP;
-        tok->valor = operator(c);
-    } else if (c == '(' || c == ')') {
+        tok->valor = operador(c);
+    } else if (strchr(pts, c) != NULL) {
         tok->tipo = TOK_PONT;
-        tok->valor = (c == '(' ? PARESQ : PARDIR);
+        tok->valor = pontuacao(c);
     } else {
         return NULL;
     }
@@ -170,5 +241,3 @@ int main()
     
     return 0;
 }
-
-
